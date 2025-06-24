@@ -2,7 +2,7 @@ var express = require('express')
 var app = express()
 
 app.get('/', function (req, res) {
-	res.send('CICD Pipeline testing successfull-updated')
+	res.send('CICD Pipeline testing successfull')
 })
 
 var server = app.listen(5000, function () {
