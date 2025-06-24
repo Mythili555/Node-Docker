@@ -1,22 +1,23 @@
 version: 0.2
+
 phases:
-  install:
-    runtime-versions:
-      nodejs: 16
   pre_build:
     commands:
-      - echo Installing source NPM dependencies...
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
+
   build:
     commands:
-      - echo Build started on `date`
-      - npm install 
-      #-f --unsafe-perm=true --allow-root
+      - echo Building Docker image...
+      - docker build -t $REPOSITORY_URI:latest .
+      - docker push $REPOSITORY_URI:latest
+
   post_build:
     commands:
-      - echo build completed
+      - echo Creating imagedefinitions.json for ECS...
+      - printf '[{"name":"%s","imageUri":"%s"}]' "$CONTAINER_NAME" "$REPOSITORY_URI:latest" > imagedefinitions.json
+      - cat imagedefinitions.json
+
 artifacts:
   files:
-    - appspec.yml
-    - script/
-    - node_modules/
-    - '**/*'
+    - imagedefinitions.json
